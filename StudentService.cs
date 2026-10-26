@@ -16,9 +16,10 @@ public class StudentService
         Db.AllStudents.Add(newStudent);
         await Db.SaveChangesAsync();
     }
-    public async Task<List<Student>> GetAllStudent()
+    public async Task<List<Student>> GetAllStudent(int page,int pageSize)
     {
-       return await Db.AllStudents.ToListAsync();
+       int skipCount=(page-1)*pageSize;
+       return await Db.AllStudents.OrderBy(s=>s.Id).Skip(skipCount).Take(pageSize).ToListAsync();
     }
     public async Task<Student?> GetOneStudent(int id)
     {

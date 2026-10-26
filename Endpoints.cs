@@ -9,9 +9,9 @@ public static class Endpoints
             await service.AddStudent(student);
             return Results.Created($"/students/{student.Id}", student);
         });
-        app.MapGet("/students", async (StudentService service) =>
+        app.MapGet("/students", async (StudentService service,int page,int pageSize) =>
         {
-            var students=await service.GetAllStudent();
+            var students=await service.GetAllStudent(page,pageSize);
             return Results.Ok(students);
 
         });
