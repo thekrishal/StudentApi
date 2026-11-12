@@ -11,7 +11,7 @@ public class StudentService
         _logger=logger;
     }
     public async Task AddStudent(Student newStudent)
-    {
+    { 
         _logger.LogInformation("Adding a new student");
         Db.AllStudents.Add(newStudent);
         await Db.SaveChangesAsync();

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using StudentDetails;
 public static class Endpoints
 {
@@ -60,5 +61,15 @@ public static class Endpoints
             var filteredStudent=await service.FilterStudents(age);
             return Results.Ok(filteredStudent);
         });
+        app.MapPost("/auth/register",async (RegisterRequest request,UserManager<ApplicationUser> manager)=>
+        {
+            var user= new ApplicationUser
+            {
+                FullName=request.FullName,
+                UserName=request.Email,
+                Email=request.Email
+            };
+            IdentityResult status=await manager.CreateAsync(user,request.Password);
+       });
     }
 }

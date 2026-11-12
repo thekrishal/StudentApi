@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using StudentDetails;
 var builder = WebApplication.CreateBuilder(args);
@@ -6,6 +7,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddOpenApi();
 builder.Services.AddValidation();
 builder.Services.AddDbContext<StudentDbContext>(options => options.UseSqlite("Data Source=student.db"));
+builder.Services.AddIdentityCore<ApplicationUser>().AddRoles<IdentityRole>().AddEntityFrameworkStores<StudentDbContext>();
 builder.Services.AddScoped<StudentService>();
 builder.Services.AddProblemDetails();
 var app = builder.Build();
