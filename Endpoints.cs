@@ -78,5 +78,22 @@ public static class Endpoints
             else
             return Results.Created("/auth/login","Sign up successful.You can now login");
        });
+       app.MapPost("/auth/login" , async(LoginRequest request, UserManager<ApplicationUser> manager)=>
+       {
+        var Email=request.Email;
+        ApplicationUser? existingUser  = await  manager.FindByEmailAsync(Email);
+        if(existingUser==null)
+           {
+               return Results.Unauthorized();
+           }
+        bool isPasswordCorrect =await manager.CheckPasswordAsync(existingUser,request.Password);
+        if(!isPasswordCorrect)
+           {
+               return Results.Unauthorized();
+           }
+        return Results.Ok("Login Successful");
+        
+
+       });
     }
 }
