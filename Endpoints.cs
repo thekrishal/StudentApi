@@ -51,6 +51,7 @@ public static class Endpoints
             return Results.Ok(deletedStudent);
 
         });
+        
         app.MapGet("/students/search",async (string name,StudentService service)=>
         {
             var searchedStudent= await service.SearchAStudent(name);
@@ -70,6 +71,12 @@ public static class Endpoints
                 Email=request.Email
             };
             IdentityResult status=await manager.CreateAsync(user,request.Password);
+            if(!status.Succeeded)
+            {
+                return Results.BadRequest(status.Errors.Select(errorType=>errorType.Description));
+            }
+            else
+            return Results.Created("/auth/login","Sign up successful.You can now login");
        });
     }
 }
