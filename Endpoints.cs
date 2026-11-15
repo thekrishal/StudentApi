@@ -1,6 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using StudentDetails;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 public static class Endpoints
 {
     public static void MapEndpoints(this WebApplication app)
@@ -78,7 +83,7 @@ public static class Endpoints
             else
             return Results.Created("/auth/login","Sign up successful.You can now login");
        });
-       app.MapPost("/auth/login" , async(LoginRequest request, UserManager<ApplicationUser> manager)=>
+       app.MapPost("/auth/login" , async(LoginRequest request, UserManager<ApplicationUser> manager,IConfiguration config)=>
        {
         var Email=request.Email;
         ApplicationUser? existingUser  = await  manager.FindByEmailAsync(Email);
@@ -91,9 +96,23 @@ public static class Endpoints
            {
                return Results.Unauthorized();
            }
-        return Results.Ok("Login Successful");
-        
-
+        Claim claimForId=new Claim(ClaimTypes.NameIdentifier,existingUser.Id);
+        Claim claimForEmail=new Claim(ClaimTypes.Email,existingUser.Email);
+        List<Claim> claims=new List<Claim>
+        {
+            claimForId,
+            claimForEmail
+        };
+        string? key=config.GetValue<string>("Jwt:Key");
+        byte[] keyBytes=Encoding.UTF8.GetBytes(key);
+        SymmetricSecurityKey securityKey= new SymmetricSecurityKey(keyBytes);
+        SigningCredentials algo= new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+        var issuer=config.GetValue<string>("Jwt:Issuer");
+        var audience=config.GetValue<string>("Jwt:Audience");
+        JwtSecurityToken jwtToken=new JwtSecurityToken(issuer,audience,claims,DateTime.UtcNow,DateTime.UtcNow.AddMinutes(30),algo);
+        JwtSecurityTokenHandler tokenHandler=new JwtSecurityTokenHandler();
+        string jwtToken_string=tokenHandler.WriteToken(jwtToken);
+        return Results.Ok(jwtToken_string);
        });
     }
 }
