@@ -1,3 +1,4 @@
+using Microsoft.OpenApi;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using StudentDetails;
@@ -6,7 +7,21 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        Description = "JWT Authentication"
+    });
+    options.AddSecurityRequirement(document =>
+        new OpenApiSecurityRequirement
+        {
+            [new OpenApiSecuritySchemeReference("Bearer", document)] = []
+        });
+});
 builder.Services.AddOpenApi();
 builder.Services.AddValidation();
 builder.Services.AddDbContext<StudentDbContext>(options => options.UseSqlite("Data Source=student.db"));
@@ -37,8 +52,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 builder.Services.AddAuthorization();
-
-
 builder.Services.AddScoped<StudentService>();
 builder.Services.AddProblemDetails();
 var app = builder.Build();
