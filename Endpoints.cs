@@ -67,22 +67,32 @@ public static class Endpoints
             var filteredStudent=await service.FilterStudents(age);
             return Results.Ok(filteredStudent);
         }).RequireAuthorization();
-        app.MapPost("/auth/register",async (RegisterRequest request,UserManager<ApplicationUser> manager)=>
+        app.MapPost("/auth/register", async (RegisterRequest request, UserManager<ApplicationUser> manager) =>
         {
-            var user= new ApplicationUser
+            ApplicationUser user = new ApplicationUser
             {
-                FullName=request.FullName,
-                UserName=request.Email,
-                Email=request.Email
+                FullName = request.FullName,
+                UserName = request.Email,
+                Email = request.Email
             };
-            IdentityResult status=await manager.CreateAsync(user,request.Password);
-            if(!status.Succeeded)
+            IdentityResult status = await manager.CreateAsync(user, request.Password);
+            if (!status.Succeeded)
             {
-                return Results.BadRequest(status.Errors.Select(errorType=>errorType.Description));
+                return Results.BadRequest(status.Errors.Select(errorType => errorType.Description));
             }
-            else
-            return Results.Created("/auth/login","Sign up successful.You can now login");
-       });
+            IdentityResult roleStatus = await manager.AddToRoleAsync(user, "Student");
+            if (!roleStatus.Succeeded)
+            {
+                await manager.DeleteAsync(user);
+
+                return Results.Problem(
+                    title: "Registration failed",
+                    detail: "Could not assign the default Student role.",
+                    statusCode: StatusCodes.Status500InternalServerError
+                );
+            }
+            return Results.Created("/auth/login", "Sign up successful. You can now login");
+        });
        app.MapPost("/auth/login" , async(LoginRequest request, UserManager<ApplicationUser> manager,IConfiguration config)=>
        {
         var Email=request.Email;

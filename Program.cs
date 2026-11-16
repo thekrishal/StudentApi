@@ -55,7 +55,27 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<StudentService>();
 builder.Services.AddProblemDetails();
 var app = builder.Build();
-app.UseAuthentication();
+
+string[] roles = { "Student", "Teacher", "Admin" };
+
+using (IServiceScope scope = app.Services.CreateScope())
+{
+    RoleManager<IdentityRole> roleManager =
+        scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    foreach (string role in roles)
+    {
+        bool roleExists = await roleManager.RoleExistsAsync(role);
+        if (!roleExists)
+        {
+            IdentityResult result =
+                await roleManager.CreateAsync(new IdentityRole(role));
+            if (!result.Succeeded)
+            {
+                throw new InvalidOperationException(
+                    $"Failed to create role {role}: " +
+                    string.Join(", ", result.Errors.Select(error => error.Description))
+                );
+            }}}}
 app.UseAuthorization();
 app.UseExceptionHandler();
 app.MapEndpoints();
