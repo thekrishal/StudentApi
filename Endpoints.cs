@@ -106,6 +106,7 @@ public static class Endpoints
            {
                return Results.Unauthorized();
            }
+        IList<string> getRole = await manager.GetRolesAsync(existingUser);
         Claim claimForId=new Claim(ClaimTypes.NameIdentifier,existingUser.Id);
         Claim claimForEmail=new Claim(ClaimTypes.Email,existingUser.Email);
         List<Claim> claims=new List<Claim>
@@ -113,6 +114,11 @@ public static class Endpoints
             claimForId,
             claimForEmail
         };
+        foreach (string role in getRole)
+        {
+            Claim claimForRole = new Claim(ClaimTypes.Role, role);
+            claims.Add(claimForRole);
+        }
         string? key=config.GetValue<string>("Jwt:Key");
         byte[] keyBytes=Encoding.UTF8.GetBytes(key);
         SymmetricSecurityKey securityKey= new SymmetricSecurityKey(keyBytes);
