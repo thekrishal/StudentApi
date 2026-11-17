@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Authorization;
 public static class Endpoints
 {
     public static void MapEndpoints(this WebApplication app)
@@ -55,7 +56,7 @@ public static class Endpoints
                 return Results.NotFound($"Student with id {id} not found");
             return Results.Ok(deletedStudent);
 
-        }).RequireAuthorization();
+        }).RequireAuthorization().RequireRole("Admin");
         
         app.MapGet("/students/search",async (string name,StudentService service)=>
         {
