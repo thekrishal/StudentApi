@@ -76,6 +76,7 @@ using (IServiceScope scope = app.Services.CreateScope())
                     string.Join(", ", result.Errors.Select(error => error.Description))
                 );
             }}}}
+
 app.UseAuthorization();
 app.UseExceptionHandler();
 app.MapEndpoints();
